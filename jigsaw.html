@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jigsaw Puzzle</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        #puzzle-container {
+            width: 450px;
+            height: 450px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2px;
+        }
+        .puzzle-piece {
+            width: 150px;
+            height: 150px;
+            background-size: 450px 450px;
+            cursor: grab;
+        }
+    </style>
+</head>
+<body>
+    <div id="puzzle-container"></div>
+    <script>
+        const puzzleContainer = document.getElementById('puzzle-container');
+        const pieces = [];
+        const imageUrl = 'https://drive.google.com/uc?export=view&id=1Iqwe2VxoERoa68jtM6CclU439h3UXCn3';
+
+        function createPieces() {
+            for (let i = 0; i < 9; i++) {
+                const piece = document.createElement('div');
+                piece.classList.add('puzzle-piece');
+                piece.style.backgroundImage = `url(${imageUrl})`;
+                piece.style.backgroundPosition = `${(i % 3) * -150}px ${Math.floor(i / 3) * -150}px`;
+                piece.setAttribute('draggable', 'true');
+                piece.setAttribute('data-index', i);
+                pieces.push(piece);
+            }
+            shuffle(pieces);
+            pieces.forEach(piece => puzzleContainer.appendChild(piece));
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        puzzleContainer.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', e.target.dataset.index);
+        });
+
+        puzzleContainer.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        puzzleContainer.addEventListener('drop', (e) => {
+            const fromIndex = e.dataTransfer.getData('text/plain');
+            const toIndex = e.target.dataset.index;
+
+            if (toIndex === undefined) return;
+
+            const fromElement = pieces[fromIndex];
+            const toElement = pieces[toIndex];
+
+            puzzleContainer.insertBefore(fromElement, toElement);
+            pieces.splice(toIndex, 0, pieces.splice(fromIndex, 1)[0]);
+
+            if (checkCompletion()) {
+                alert('Puzzle Completed!');
+            }
+        });
+
+        function checkCompletion() {
+            return pieces.every((piece, index) => piece.dataset.index == index);
+        }
+
+        createPieces();
+    </script>
+</body>
+</html>
